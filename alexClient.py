@@ -51,6 +51,9 @@ def set_port_and_host():
             try:
                 host = sys.argv[1]                              # User-specified host
                 port = 9999
+            except ValueError:                                  # Error thrown by int()
+                print("Error: Port Number must be an integer.\n")
+                exit_usage()
         case 3:                                                 # 2 CLAs - Host AND port num specified
             try: 
                 host = sys.argv[1]                              # User-specified host
@@ -73,9 +76,17 @@ def make_connection(hostname, portnum):
         serverAddress = (hostname, portnum)                     # Specify server address
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # Create socket object
         s.connect(serverAddress)                                # Connect to server 
-        print(f"Connected to {hostname}:{portnum}")
-    except OSError:
-        print(f"Error: Connection to {hostname}:{portnum} failed.")
+        print(f"Connected to {hostname} : {portnum}")
+
+        # Testing lines
+        server_msg = s.recv(1024).decode()                      # Print server message
+        print(f"Server said: {server_msg}")
+        s.send("OK".encode())                                   # Send OK
+        # Testing lines
+
+    except OSError:                                             # Error thrown by failure to connect
+        print(f"Error: Connection to {hostname} : {portnum} failed.")
+        exit_usage()
         
 
 #########################################################################
