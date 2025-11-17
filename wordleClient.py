@@ -1,21 +1,23 @@
 #####################################################################
-# Author:          Alexander David Lowe                             #
-# Major:           Computer Science                                 #
-# Creation Date:   November 14th, 2025                              #
-# Due Date:        November 24th, 2025                              #
-# Course:          CPSC 328-020                                     #
-# Professor Name:  Professor R. Walther                             #
-# Assignment:      TEAM Project Application: Wordle                 #
-# Filename:        wordleClient.py                                  #
-# Purpose:         Client-side program that ...                     #
-#                                                                   #
-#                                                                   #
-#                                                                   #
+# Author:           Alexander David Lowe                            #
+# Major:            Computer Science                                #
+# Creation Date:    November 14th, 2025                             #
+# Due Date:         November 24th, 2025                             #
+# Course:           CPSC 328-020                                    #
+# Professor Name:   Professor R. Walther                            #
+# Assignment:       TEAM Project Application: Wordle                #
+# Filename:         wordleClient.py                                 #
+# Purpose:          Client-side application that connects to a      #
+#                   server-side application using the TCP protocol  #
+#                   to facilitate play of the game Wordle.          #
+#                   Answer word is received from server.            #
 #####################################################################
 
 import sys
 import socket
 import ipaddress
+
+# Spencer Library Import goes here
 
 # host = "127.0.0.1"
 # port = 9999
