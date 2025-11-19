@@ -31,6 +31,19 @@ def main():
         print("Receiving data operation went wrong.")
         return -1
 
+    while True:
+        data = input("READY/WORD to play Wordle. BYE to quit.")
+        if data == "READY" or data == "WORD":
+            s.send(data.encode())
+            data = s.recv(512)
+            print(data.decode())
+        elif data == "BYE":
+            s.send(data.encode())
+            data = s.recv(512)
+            print(data.decode())
+            break
+
+
     s.close()
 
     return 0

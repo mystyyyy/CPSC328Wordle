@@ -18,8 +18,8 @@
 # https://docs.python.org/3/library/ipaddress.html                #
 # https://realpython.com/python-sockets/
 # https://stackoverflow.com/questions/12454675/whats-the-return-value-of-socket-accept-in-python
-#
-#
+# https://docs.python.org/3/library/threading.html
+# https://stackoverflow.com/questions/4394145/picking-a-random-word-from-a-list-in-python
 #
 ###################################################################
 
@@ -27,10 +27,11 @@
 import sys
 import socket
 import ipaddress
+# threads can be used to handle many incoming connections
+import threading
 import random
 
 DEFAULTPORTNUM = 9999
-# It can be assumed that the default IP address wil be local host!
 HOST = "127.0.0.1"
 # Theme: Food!
 # Note: This is the only place I used AI(ChatGPT). Also tweaked list cause it kept putting in 6-letter words in the list :(
@@ -48,12 +49,13 @@ WORDLELIST = [
 ]
 
 # Function Name: main
-# Description:   
-#
-#
+# Description:   Create a server socket based on default/given port number 
+#                at localhost. The server will then accept many incoming connections
+#                and will handle the server side of the Wordle protocol
 # Parameters:    n/a
 # Return Value:  0 - success
 def main():
+    port = DEFAULTPORTNUM
     if len(sys.argv) > 1:
         try:
             port = int(sys.argv[1])
@@ -66,10 +68,9 @@ def main():
             return -1
 
         print("Wordle Application Server is running on port number:", port, "\n")
-    else:
-        port = DEFAULTPORTNUM
-        print("Wordle Application Server is running on DEFAULT PORT NUMBER:", DEFAULTPORTNUM, "\n")
 
+    if port == DEFAULTPORTNUM:
+        print("Wordle Application Server is running on DEFAULT PORT NUMBER:", DEFAULTPORTNUM, "\n")
 
     socketCreation(HOST, port)
 
@@ -91,7 +92,6 @@ def socketCreation(HOST, port):
     except OSError as e:
         print("Socket creation went wrong/failed.")
         print("Error: ", e)
-        return -1
 
     # The loop is checking if the port number is already in use or not.
     # If the socket fails to bind, then an exception is raised, port num
@@ -114,7 +114,6 @@ def socketCreation(HOST, port):
         # check if the port is taken
         print("Socket listening went wrong/failed")
         print("Error: ", e)
-        return -1
 
     # accept() returns the pair, (conn, address)
     # conn - new socket object that can be used to send/recv info
@@ -123,17 +122,45 @@ def socketCreation(HOST, port):
         # Source: https://docs.python.org/3/library/socket.html#module-socket
     # when client connect, send "HELLO"
     try:
+        # Use threads to handle many connections
+        # https://stackoverflow.com/questions/10810249/python-socket-multiple-clients
         conn, address = s.accept()
-        data = "HELLO"
-        conn.send(data.encode())
+        #threading.Thread(target=on_new_client, args=(conn, address)).start()
     except OSError as e:
         print("Server socket failed to accept incoming connection")
         print("Error: ", e)
-        return -1
 
+    #return conn, address
+    #put the bottom code in its own function later
+    
+    data = "HELLO"
+    conn.send(data.encode())
+    
     print("TCP Connection:", address[0])
-    # if server receives "READY" or "WORD": Send random word
-
-    # if server receive "BYE" or "QUIT": client disconnects
+    
+    recvMaxSize = 16
+    #source: https://stackoverflow.com/questions/53285659/how-can-i-wait-until-i-receive-data-using-a-python-socket
+    while True:
+        data = ((conn.recv(recvMaxSize)).decode()).upper()
+        if not data:
+            break
+        # if server receives "READY" or "WORD": Send random word
+        if data == "READY" or data == "WORD":
+            try:
+                randomWord = random.choice(WORDLELIST)
+                conn.send(randomWord.encode())
+            except OSError as e:
+                print("Server failed to send message")
+                print("Error: ", e)
+        # if server receive "BYE" or "QUIT": client disconnects
+        elif data == "BYE" or data == "QUIT":
+            try:
+                byeMsg = "Connection terminating."
+                conn.send(byeMsg.encode())
+                break
+            except OSError as e:
+                print("Server failed to send message")
+                print("Error: ", e)
+            
 
 main()
