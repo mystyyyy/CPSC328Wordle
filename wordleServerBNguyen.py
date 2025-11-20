@@ -20,7 +20,7 @@
 # https://stackoverflow.com/questions/12454675/whats-the-return-value-of-socket-accept-in-python
 # https://docs.python.org/3/library/threading.html
 # https://stackoverflow.com/questions/4394145/picking-a-random-word-from-a-list-in-python
-#
+# https://www.geeksforgeeks.org/python/socket-programming-multi-threading-python/
 ###################################################################
 
 
@@ -72,10 +72,15 @@ def main():
     if port == DEFAULTPORTNUM:
         print("Wordle Application Server is running on DEFAULT PORT NUMBER:", DEFAULTPORTNUM, "\n")
 
-    socketCreation(HOST, port)
+    s = socketCreation(HOST, port)
+    sockaddr_in = socketBindHandler(s, HOST, port)
+    socketAccept(s, sockaddr_in)
+    dataHandler(conn, address)
 
-    #s.close()
+    s.close()
     return 0
+
+
 
 # Function Name: socketCreation
 # Description:   Creates a socket, binds it, listen for connections, and
@@ -85,14 +90,22 @@ def main():
 #                will read/write eachother information.
 # Parameters:    HOST - The IP address of the server
 #                port - The port that the server will try to connect to
-# Return Value:  n/a
+# Return Value:  s
 def socketCreation(HOST, port):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except OSError as e:
         print("Socket creation went wrong/failed.")
         print("Error: ", e)
+    return s
 
+
+
+# Function Name: socketBindHandler
+# Description:   
+# Parameters:    
+# Return Value:  n/a
+def socketBindHandler(s, HOST, port):
     # The loop is checking if the port number is already in use or not.
     # If the socket fails to bind, then an exception is raised, port num
     # Is incremented, and try again until it works.
@@ -106,7 +119,15 @@ def socketCreation(HOST, port):
             print("Error: ", e)
             port = port + 1
             print("Trying again. Connecting to port number:", port)
+    return sockaddr_in
 
+
+
+# Function Name: socketAccept
+# Description:   
+# Parameters:    
+# Return Value:  n/a
+def socketAccept(s, sockaddr_in):
     try:
         s.listen()
         print("TCP: Listening on port", sockaddr_in[1])
@@ -120,24 +141,30 @@ def socketCreation(HOST, port):
     # address - ip address bound to socket on client side
         # Note: Address is also a pair of the client IP addr + port number
         # Source: https://docs.python.org/3/library/socket.html#module-socket
-    # when client connect, send "HELLO"
-    try:
-        # Use threads to handle many connections
-        # https://stackoverflow.com/questions/10810249/python-socket-multiple-clients
-        conn, address = s.accept()
-        #threading.Thread(target=on_new_client, args=(conn, address)).start()
-    except OSError as e:
-        print("Server socket failed to accept incoming connection")
-        print("Error: ", e)
+    while True:
+        try:
+            # Use threads to handle many connections
+            # Source: https://stackoverflow.com/questions/5568555/thread-vs-threading
+            conn, address = s.accept()
 
-    #return conn, address
-    #put the bottom code in its own function later
-    
-    data = "HELLO"
-    conn.send(data.encode())
-    
-    print("TCP Connection:", address[0])
-    
+            # when client connect, send "HELLO"
+            print("TCP Connection:", address[0])
+            data = "HELLO"
+            conn.send(data.encode())
+
+            threading.Thread(target = dataHandler, args = (conn, address)).start()
+        except OSError as e:
+            print("Server socket failed to accept incoming connection")
+            print("Error: ", e)
+    return conn, address
+
+
+
+# Function Name: dataHandler
+# Description:   
+# Parameters:    
+# Return Value:  n/a
+def dataHandler(conn, address):
     recvMaxSize = 16
     #source: https://stackoverflow.com/questions/53285659/how-can-i-wait-until-i-receive-data-using-a-python-socket
     while True:
@@ -161,6 +188,6 @@ def socketCreation(HOST, port):
             except OSError as e:
                 print("Server failed to send message")
                 print("Error: ", e)
-            
+    return 0       
 
 main()
