@@ -181,6 +181,7 @@ def dataHandler(conn, address):
                 print("Error: ", e)
         # if server receive "BYE" or "QUIT": client disconnects
         elif data == "BYE" or data == "QUIT":
+            print(data)
             try:
                 byeMsg = "Connection terminating."
                 conn.send(byeMsg.encode())

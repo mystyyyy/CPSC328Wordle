@@ -6,7 +6,7 @@ import ipaddress
 
 def main():
     host = "127.0.0.1"
-    port = 9999
+    port = 10000
 
     sockaddr_in = (host, port)
 
