@@ -72,8 +72,9 @@ def main():
     if port == DEFAULTPORTNUM:
         print("Wordle Application Server is running on DEFAULT PORT NUMBER:", DEFAULTPORTNUM, "\n")
 
-    s = socketCreation(HOST, port)
+    s = socketCreation()
     sockaddr_in = socketBindHandler(s, HOST, port)
+    socketListen(s, sockaddr_in)
     socketAccept(s, sockaddr_in)
     dataHandler(conn, address)
 
@@ -83,15 +84,11 @@ def main():
 
 
 # Function Name: socketCreation
-# Description:   Creates a socket, binds it, listen for connections, and
-#                accepts any connection w/ error handling. Additionally
-#                handles binding the socket if port number is already in use.
-#                Once the connection is accepted, the server and client
-#                will read/write eachother information.
-# Parameters:    HOST - The IP address of the server
-#                port - The port that the server will try to connect to
-# Return Value:  s
-def socketCreation(HOST, port):
+# Description:   Creates a socket. If an exception is raised, print
+#                out an error.
+# Parameters:    N/A
+# Return Value:  s - Newly created socket object
+def socketCreation():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except OSError as e:
@@ -102,13 +99,17 @@ def socketCreation(HOST, port):
 
 
 # Function Name: socketBindHandler
-# Description:   
-# Parameters:    
-# Return Value:  n/a
+# Description:   Binds the socket to an address and port. If port
+#                is already in use, then increment port number by
+#                one and try again. Print out an error message
+#                if exception is raised.
+# Parameters:    s - Socket object
+#                HOST - The IP address of the server
+#                port - The port that the server is connecting to 
+# Return Value:  sockaddr_in - Host and port number pair the
+#                socket binded to.
 def socketBindHandler(s, HOST, port):
-    # The loop is checking if the port number is already in use or not.
-    # If the socket fails to bind, then an exception is raised, port num
-    # Is incremented, and try again until it works.
+    # The loop only stops after the socket is successfully binded
     while True:
         try:
             sockaddr_in = (HOST, port)
@@ -124,10 +125,12 @@ def socketBindHandler(s, HOST, port):
 
 
 # Function Name: socketAccept
-# Description:   
-# Parameters:    
-# Return Value:  n/a
-def socketAccept(s, sockaddr_in):
+# Description:   The socket listens for incoming connections.
+#                Prints out error message if exception is raised.
+# Parameters:    s - Socket object
+#                sockaddr_in - Host and port number pair
+# Return Value:  
+def socketListen(s, sockaddr_in):
     try:
         s.listen()
         print("TCP: Listening on port", sockaddr_in[1])
@@ -136,6 +139,18 @@ def socketAccept(s, sockaddr_in):
         print("Socket listening went wrong/failed")
         print("Error: ", e)
 
+
+
+# Function Name: socketAccept
+# Description:   The socket accepts incoming client connections 
+#                concurrently via the use of threads. On successful
+#                client connection, send "HELLO" to connected client.
+#                Prints out error message when exception is raised.
+# Parameters:    s - Socket object
+#                sockaddr_in - Host and port number pair
+# Return Value:  conn - Client socket object that can be used to send/recv info
+#                address - Client IP address and port number pair
+def socketAccept(s, sockaddr_in):
     # accept() returns the pair, (conn, address)
     # conn - new socket object that can be used to send/recv info
     # address - ip address bound to socket on client side
@@ -161,8 +176,12 @@ def socketAccept(s, sockaddr_in):
 
 
 # Function Name: dataHandler
-# Description:   
-# Parameters:    
+# Description:   Handles receiving messages from client connection. If server
+#                receives "READY" or "WORD," send the client a random word.
+#                If server receives "BYE" or "QUIT," send message to client
+#                that connection is terminating
+# Parameters:    conn - Client socket object that can be used to send/recv info
+#                address - Client IP address and port number pair
 # Return Value:  n/a
 def dataHandler(conn, address):
     recvMaxSize = 16
@@ -190,5 +209,7 @@ def dataHandler(conn, address):
                 print("Server failed to send message")
                 print("Error: ", e)
     return 0       
+
+
 
 main()
