@@ -1,24 +1,48 @@
-# wordleLib.py
-# Spencer Silva
-# Computer Science Major
-# Created 11/14/25
-# Due 11/24/25
-# CPSC328, Professor Walther
-# Library functions for Wordle application
+###################################################################
+# Author:         Spencer Silva                                   #
+# Major:          Computer Science                                #
+# Creation Date:  November 14, 2025                               #
+# Due Date:       November 24, 2025                               #
+# Course:         Network and Secure Programming (CPSC328-020)    #
+# Professor Name: Professor Walther                               #
+# Assignment:     Team Assignment - Application                   #
+# Filename:       wordleLib.py                                    #
+# Purpose:        Create a Wordle application that allows many    #
+#                 users to play simultaneously. Library           #
+#                 contains functions used between both the        #
+#                 client and server.                              #
+###################################################################
 
 import sys
 import socket
 
 
-# getWord retrieves the word from a socket, and ensures it is 5 characters or less.
+
+# sendWord sends a message to the socket to be received by getWord
+# This contains error checking to ensure the entered message isn't longer than the
+# max number of characters of 5
+def sendWord(socket sock)
+    text = input()
+    if isinstance(input, str):
+        if len(input) <= 5:
+            sock.send(input.encode())
+            return
+    print("Input is invalid- Ensure input is 5 characters or less\n")
+    return
+    # maybe reprompt? maybe leave for client and server to decide
+    
+    
+
+
+# getWordFrom retrieves the word from a socket, and ensures it is 5 characters or less.
 # This both ensures that the word is within the valid range and helps to sanitize 
 # the input.  Returns the string unless it is greater than 5, else returns 0.
-def getWord(socket sock):
+def getWordFrom(socket sock):
     input = sock.recv(1024).decode('utf-8')
-    if len(input) <= 5:
-        return input
-    else:
-        return 0
+    if isinstance(input, str):
+        if len(input) <= 5:
+            return input.upper()
+    return 0
 
 
 # strComp compares the user input word to the word chosen by the game, returning
@@ -29,8 +53,8 @@ def getWord(socket sock):
 def strComp(userIn, word):
     returnTuple = (0, 0, 0, 0, 0)
     counter = 0
-    for letter in userIn:
-        for compLetter in word:
+    for letter in userIn.upper():
+        for compLetter in word.upper():
             if letter == compLetter:
                 returnTuple[counter] = 1
         if letter == word[counter]:
@@ -38,4 +62,6 @@ def strComp(userIn, word):
         counter++
     return returnTuple
     
-
+    
+    
+ 
