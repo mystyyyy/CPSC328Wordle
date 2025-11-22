@@ -142,18 +142,23 @@ def print_instructions():
 # Return Value:     N/A                                                 #
 #########################################################################
 def run_game(answer_word):
+
+    # NOTE: Display all previous guesses after each guess? make yellow letters
+    #       lowercase? Show all correct letters in addition to correctly positioned correct letters?
+
     answer = answer_word
     guesses_remaining = 6
-    green_letters = []
+    current_green_letters = []
+    known_green_letters = ['_'] * 5
     yellow_letters = []
     gray_letters = []
     white_letters = list(string.ascii_uppercase)
     print_instructions()
 
-    while guesses_remaining > -1:
+    while guesses_remaining > 0:
         print(f"Guesses Remaining: {guesses_remaining}")
         guess = input().strip().upper()
-        print(f"You guessed: {guess}")
+        print(f"\nYou guessed: {guess}")
 
         # If guess contains non-letters, try again
         if not guess.isalpha():
@@ -165,32 +170,35 @@ def run_game(answer_word):
             print(f"Error: Guess must contain exactly 5 letters\n")
             continue
 
-        # Decrement remaining guesses
-        guesses_remaining -= 1
 
         # Reset lists of green and yellow letters, prepare for reassignment
-        green_letters = ["_"] * 5
+        current_green_letters = ['_'] * 5
         yellow_letters = []
 
         # Sort guessed letters
         for i, char in enumerate(guess):
             # print(f"{i} {char} {answer[i]}")
-            white_letters.remove(char)
+            if char in white_letters:
+                white_letters.remove(char)
             if char == answer[i]:
-                green_letters[i] = char
+                known_green_letters[i] = char
+                current_green_letters[i] = char
             elif char in answer and char not in yellow_letters:
                 yellow_letters.append(char)
             elif char not in answer and char not in gray_letters:
                 gray_letters.append(char)
             else:
                 print(f"Error: Letter {char}")
+
+        # Display info
+        print(f"Green letters in this guess:\n{''.join(current_green_letters)}")
+        print(f"All known green letters:\n{''.join(known_green_letters)}")
+        print(f"All known yellow letters:\n{', '.join(yellow_letters)}")
+        print(f"Unguessed letters:\n{', '.join(white_letters)}")
+        print(f"Incorrect letters:\n{', '.join(gray_letters)}")
         
-        # Display correctly guessed letters
-        print(f"Correct letters in correct positions: {''.join(green_letters)}")
-        print(f"Correct letters in incorrect positions: {', '.join(yellow_letters)}")
-        print(f"Unguessed letters: {', '.join(white_letters)}")
-        print(f"Incorrect letters: {', '.join(gray_letters)}")
-        
+        # Decrement remaining guesses
+        guesses_remaining -= 1
 
         if guess == answer:
             print(f"You guessed the word! Congratulations!")
