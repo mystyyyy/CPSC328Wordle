@@ -49,24 +49,21 @@ def set_port_and_host():
         print("Error: Too many command-line arguments.\n")
         exit_usage()
 
-    match len(sys.argv):                                        # How many CLAs are there?
-        case 1:                                                 # 0 CLAs
-            print("Error: Please provide a hostname.\n")
+    elif len(sys.argv) == 1:                                      # 0 CLAs
+        print("Error: Please provide a hostname.\n")
+        exit_usage()
+
+    elif len(sys.argv) == 2:                                      # 1 CLA (Host only)
+        host = sys.argv[1]                                  # User-specified host
+        port = 9999                                         # Default port number
+
+    elif len(sys.argv) == 3:                                      # 2 CLAs     
+        try: 
+            host = sys.argv[1]                                  # User-specified host
+            port = int(sys.argv[2])                             # User-specified port number - check if int
+        except ValueError:                                      # Error thrown by int() if non-int provided
+            print("Error: Port Number must be an integer.\n")
             exit_usage()
-        case 2:                                                 # 1 CLA - Host specified only
-            try:
-                host = sys.argv[1]                              # User-specified host
-                port = 9999
-            except ValueError:                                  # Error thrown by int()
-                print("Error: Port Number must be an integer.\n")
-                exit_usage()
-        case 3:                                                 # 2 CLAs - Host AND port num specified
-            try: 
-                host = sys.argv[1]                              # User-specified host
-                port = int(sys.argv[2])                         # User-specified port number - check if int
-            except ValueError:                                  # Error thrown by int()
-                print("Error: Port Number must be an integer.\n")
-                exit_usage()
 
     return host, port
 
@@ -173,7 +170,6 @@ def run_game(answer_word):
 
         # Reset lists of green and yellow letters, prepare for reassignment
         current_green_letters = ['_'] * 5
-        yellow_letters = []
 
         # Sort guessed letters
         for i, char in enumerate(guess):
@@ -183,7 +179,9 @@ def run_game(answer_word):
             if char == answer[i]:
                 known_green_letters[i] = char
                 current_green_letters[i] = char
-            elif char in answer and char not in yellow_letters:
+                if char in yellow_letters:
+                    yellow_letters.remove(char)
+            elif char in answer and char not in yellow_letters and char not in known_green_letters:
                 yellow_letters.append(char)
             elif char not in answer and char not in gray_letters:
                 gray_letters.append(char)
@@ -204,7 +202,7 @@ def run_game(answer_word):
             print(f"You guessed the word! Congratulations!")
             exit_usage() # FUNCTION THAT GOES TO PLAY AGAIN
 
-        if guesses_remaining <0:
+        if guesses_remaining == 0:
             print(f"Too bad!")
             exit_usage() # FUNCTION THAT GOES TO PLAY AGAIN
 
