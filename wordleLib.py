@@ -53,6 +53,8 @@ def getWordFrom(socket sock):
 def strComp(userIn, word):
     returnTuple = (0, 0, 0, 0, 0)
     counter = 0
+    
+    # compare each letter to the word
     for letter in userIn.upper():
         for compLetter in word.upper():
             if letter == compLetter:
@@ -60,6 +62,12 @@ def strComp(userIn, word):
         if letter == word[counter]:
             returnTuple[counter] = 2
         counter++
+        
+    # now check for any duplicate letters in the submitted word
+    # used to allow for the edge case of having the same letter be in the correct
+    # location and incorrect location, and showing the player if there is another
+    # instance of that letter in the current word
+    
     return returnTuple
     
     
