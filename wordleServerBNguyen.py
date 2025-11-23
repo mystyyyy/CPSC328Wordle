@@ -94,6 +94,7 @@ def socketCreation():
     except OSError as e:
         print("Socket creation went wrong/failed.")
         print("Error: ", e)
+        sys.exit()
     return s
 
 
@@ -129,7 +130,7 @@ def socketBindHandler(s, HOST, port):
 #                Prints out error message if exception is raised.
 # Parameters:    s - Socket object
 #                sockaddr_in - Host and port number pair
-# Return Value:  
+# Return Value:  -1 
 def socketListen(s, sockaddr_in):
     try:
         s.listen()
@@ -138,6 +139,7 @@ def socketListen(s, sockaddr_in):
         # check if the port is taken
         print("Socket listening went wrong/failed")
         print("Error: ", e)
+        sys.exit()
 
 
 
@@ -182,7 +184,7 @@ def socketAccept(s, sockaddr_in):
 #                that connection is terminating
 # Parameters:    conn - Client socket object that can be used to send/recv info
 #                address - Client IP address and port number pair
-# Return Value:  n/a
+# Return Value:  0 - success
 def dataHandler(conn, address):
     recvMaxSize = 16
     #source: https://stackoverflow.com/questions/53285659/how-can-i-wait-until-i-receive-data-using-a-python-socket
