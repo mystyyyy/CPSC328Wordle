@@ -33,7 +33,6 @@ import random
 import wordleLib
 
 DEFAULTPORTNUM = 9999
->>>>>>> brandonServer
 HOST = "127.0.0.1"
 # Theme: Food!
 # Note: This is the only place I used AI(ChatGPT). Also tweaked list cause it kept putting in 6-letter words in the list :(
@@ -59,21 +58,18 @@ WORDLELIST = [
 def main():
     port = DEFAULTPORTNUM
     if len(sys.argv) > 1:
-        try:
-            port = int(sys.argv[1])
-        except:
-            print("Invalid port number")
-            return -1
-
-        if port < 0 or port > 65535:
-            print("Invalid port number")
-            return -1
+        port = int(sys.argv[1])
         print("Wordle Application Server is running on port number:", port, "\n")
+
+
+    wordleLib.socketValidation(port)
 
     if port == DEFAULTPORTNUM:
         print("Wordle Application Server is running on DEFAULT PORT NUMBER:", DEFAULTPORTNUM, "\n")
+    else: 
+        print("Wordle Application Server is running on port number:", port, "\n")
 
-    s = socketCreation()
+    s = wordleLib.socketCreation()
     sockaddr_in = socketBindHandler(s, HOST, port)
     socketListen(s, sockaddr_in)
     socketAccept(s, sockaddr_in)
@@ -81,22 +77,6 @@ def main():
 
     s.close()
     return 0
-
-
-
-# Function Name: socketCreation
-# Description:   Creates a socket. If an exception is raised, print
-#                out an error.
-# Parameters:    N/A
-# Return Value:  s - Newly created socket object
-def socketCreation():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    except OSError as e:
-        print("Socket creation went wrong/failed.")
-        print("Error: ", e)
-        sys.exit()
-    return s
 
 
 
@@ -168,7 +148,7 @@ def socketAccept(s, sockaddr_in):
             # when client connect, send "HELLO"
             print("TCP Connection:", address[0])
             data = "HELLO"
-            conn.send(data.encode())
+            wordleLib.sendMessage(conn, data)
 
             threading.Thread(target = dataHandler, args = (conn, address)).start()
         except OSError as e:
@@ -198,7 +178,8 @@ def dataHandler(conn, address):
         if data == "READY" or data == "WORD":
             try:
                 randomWord = random.choice(WORDLELIST)
-                conn.send(randomWord.encode())
+                #conn.send(randomWord.encode())
+                wordleLib.sendMessage(conn, randomWord)
             except OSError as e:
                 print("Server failed to send message")
                 print("Error: ", e)
@@ -207,7 +188,8 @@ def dataHandler(conn, address):
             print(data)
             try:
                 byeMsg = "Connection terminating."
-                conn.send(byeMsg.encode())
+                #conn.send(byeMsg.encode())
+                wordleLib.sendMessage(conn, byeMsg)
                 break
             except OSError as e:
                 print("Server failed to send message")
