@@ -40,28 +40,54 @@ Client-side example:
 
 
 HOW TO RUN THE SERVER
-    python wordleServerBNGuyen.py
+    python wordleServerBNGuyen.py [port]
     Ensure that the library file is also present
+    The user can specify what port the server connects to
+    If no port is given, then the default port, 9999, is used
 
 
 LIBRARY TYPE
-Should be a shared library due to the way Python handles things.
+The library is a shared library because all files (client and server)
+accesses the same file. Also because Python is an interpreted language,
+and static libraries are created at compile time, it must be a shared
+library.
 
 
 ABOUT THE WORDLE PROTOCOL
 1. Client and server establish the TCP three-way handshake, establishing a proper TCP connection.
+    1a. Once established, the server sends "HELLO" to the client.
 2. Server sends a word from its bank to the client
-3. Client then initiates the game using the word it was given.
-4. After the game concludes, the client can choose to play again, returning to step 2
-   or can choose to quit
-5. The client disconnects from the server, ending the connection and terminatinating the thread on
-   the server side.
+3. Client then is then prompted to say "WORD"/"READY," or "BYE"/"QUIT."
+    3a. If the user says "WORD" or "READY," then the user initiates the game.
+        The server sends a word from its bank to the client, and the user can start
+        guessing the random word that was sent by the server.
+    3b. If the user says "BYE" or "QUIT," then the server sends a message that the connection is
+        terminated and the user disconnects from the server.
+4. After the game concludes, the client can choose to play again or end the connection by answering 
+    the prompt mentioned in part 3.
 
+To synchronize the data, the client and server switches between sending and receiving data, and will
+only proceed once it receives the information. Additionally there's a function in the wordle library
+file where it matches the random word between the client and server so that the information remains
+consistent.
 
 KNOWN ISSUES WITH THE APPLICATION
-
+N/A
 
 
 
 TEAM DYNAMIC
-Brandon acted as the group leader.
+Initially everyone worked together closely, then diverged to work on their respective part
+of the project, and then lastly merged everything into the final project.
+
+When someone had a question, everyone else assisted them until they understand/misunderstandings
+are cleared up.
+
+The team first created a basic connection between the client and server using sockets.
+
+Brandon, who worked on the server consulted the network program assignment document to 
+be in line with the requirements for the project. As the team leader he reviewed the other
+team member's code to make sure the requirements for the project was being met.
+
+Alex and Spencer worked on their respective part of the project to meet the requirements of 
+the project.
