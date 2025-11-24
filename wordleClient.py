@@ -16,22 +16,31 @@
 import sys
 import socket
 import string
-
-# Spencer Library Import goes here
+import wordleLib
 
 # host = "127.0.0.1"
 # port = 9999
 
 def main():
+    # Setup 
     (host, port) = set_port_and_host()
     sock = make_connection(host, port)
     handshake(sock)
     answer_word = receive_word(sock)
     print(answer_word)
-    run_game(answer_word)
 
+    # Game Loop
+    playing = True
+    while playing == True:
+        run_game(answer_word)
+        playing = play_again()
+
+    # Terminate Connection
+    sock.close()
+    print("Thanks for playing!\n")
     return 0
 
+# Note: move welcome message outside of function so that the user isn't welcomed on repeat playthroughs.
 
 
 #####################################################################
@@ -200,11 +209,29 @@ def run_game(answer_word):
 
         if guess == answer:
             print(f"You guessed the word! Congratulations!")
-            exit_usage() # FUNCTION THAT GOES TO PLAY AGAIN
+            return
 
         if guesses_remaining == 0:
             print(f"Too bad!")
-            exit_usage() # FUNCTION THAT GOES TO PLAY AGAIN
+            return
+
+#########################################################################
+# Function name:    exit_usage                                          #
+# Description:      Exits the program and prints the proper usage of    #   
+#                   command-line arguments                              #
+# Parameters:       none                                                #
+# Return Value:     none                                                #
+#########################################################################
+def play_again():
+    print("Play again? (y/n)\n")
+    while True:
+        response = input().strip().lower()
+        if response == "y":
+            return True
+        elif response == "n":
+            return False
+        else:
+            print("Invalid response. Please enter 'y' or 'n'.\n")
 
 
 #########################################################################
