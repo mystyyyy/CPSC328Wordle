@@ -11,4 +11,39 @@
                  word bank. The client will perform the game    
                  processing and user interface.                
 
-#project stuff here
+TEAM MEMBERS 
+Alex Lowe - Client-Side of Wordle Application
+Brandon Nguyen - Server-Side of Wordle Application and team leader
+Spencer Silva - Library for Wordle Application
+
+PROJECT DESCRIPTION
+-
+-
+-
+
+COMPILING THE CLIENT AND SERVER
+
+
+
+HOW TO RUN THE CLIENT
+
+
+
+HOW TO RUN THE SERVER
+
+
+
+LIBRARY TYPE
+
+
+
+ABOUT THE WORDLE PROTOCOL
+
+
+
+KNOWN ISSUES WITH THE APPLICATION
+
+
+
+TEAM DYNAMIC
+

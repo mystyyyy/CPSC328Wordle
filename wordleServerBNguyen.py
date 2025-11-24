@@ -30,6 +30,7 @@ import ipaddress
 # threads can be used to handle many incoming connections
 import threading
 import random
+import wordleLib
 
 DEFAULTPORTNUM = 9999
 HOST = "127.0.0.1"
@@ -130,7 +131,7 @@ def socketBindHandler(s, HOST, port):
 #                Prints out error message if exception is raised.
 # Parameters:    s - Socket object
 #                sockaddr_in - Host and port number pair
-# Return Value:  -1 
+# Return Value:  n/a
 def socketListen(s, sockaddr_in):
     try:
         s.listen()
@@ -189,7 +190,8 @@ def dataHandler(conn, address):
     recvMaxSize = 16
     #source: https://stackoverflow.com/questions/53285659/how-can-i-wait-until-i-receive-data-using-a-python-socket
     while True:
-        data = ((conn.recv(recvMaxSize)).decode()).upper()
+        #data = ((conn.recv(recvMaxSize)).decode()).upper()
+        data = wordleLib.getWordFrom(conn)
         if not data:
             break
         # if server receives "READY" or "WORD": Send random word

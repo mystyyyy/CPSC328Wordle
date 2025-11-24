@@ -21,7 +21,7 @@ import socket
 # sendWord sends a message to the socket to be received by getWord
 # This contains error checking to ensure the entered message isn't longer than the
 # max number of characters of 5
-def sendWord(socket sock)
+def sendWord(sock):
     text = input()
     if isinstance(input, str):
         if len(input) <= 5:
@@ -37,7 +37,7 @@ def sendWord(socket sock)
 # getWordFrom retrieves the word from a socket, and ensures it is 5 characters or less.
 # This both ensures that the word is within the valid range and helps to sanitize 
 # the input.  Returns the string unless it is greater than 5, else returns 0.
-def getWordFrom(socket sock):
+def getWordFrom(sock):
     input = sock.recv(1024).decode('utf-8')
     if isinstance(input, str):
         if len(input) <= 5:
@@ -61,7 +61,7 @@ def strComp(userIn, word):
                 returnTuple[counter] = 1
         if letter == word[counter]:
             returnTuple[counter] = 2
-        counter++
+        counter = counter + 1
         
     # now check for any duplicate letters in the submitted word
     # used to allow for the edge case of having the same letter be in the correct
