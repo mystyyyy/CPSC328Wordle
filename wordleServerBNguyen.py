@@ -18,19 +18,22 @@
 # https://docs.python.org/3/library/ipaddress.html                #
 # https://realpython.com/python-sockets/
 # https://stackoverflow.com/questions/12454675/whats-the-return-value-of-socket-accept-in-python
-#
-#
-#
+# https://docs.python.org/3/library/threading.html
+# https://stackoverflow.com/questions/4394145/picking-a-random-word-from-a-list-in-python
+# https://www.geeksforgeeks.org/python/socket-programming-multi-threading-python/
 ###################################################################
 
 
 import sys
 import socket
 import ipaddress
+# threads can be used to handle many incoming connections
+import threading
 import random
+import wordleLib
 
 DEFAULTPORTNUM = 9999
-# It can be assumed that the default IP address wil be local host!
+>>>>>>> brandonServer
 HOST = "127.0.0.1"
 # Theme: Food!
 # Note: This is the only place I used AI(ChatGPT). Also tweaked list cause it kept putting in 6-letter words in the list :(
@@ -48,12 +51,13 @@ WORDLELIST = [
 ]
 
 # Function Name: main
-# Description:   
-#
-#
+# Description:   Create a server socket based on default/given port number 
+#                at localhost. The server will then accept many incoming connections
+#                and will handle the server side of the Wordle protocol
 # Parameters:    n/a
 # Return Value:  0 - success
 def main():
+    port = DEFAULTPORTNUM
     if len(sys.argv) > 1:
         try:
             port = int(sys.argv[1])
@@ -64,38 +68,50 @@ def main():
         if port < 0 or port > 65535:
             print("Invalid port number")
             return -1
-
         print("Wordle Application Server is running on port number:", port, "\n")
-    else:
-        port = DEFAULTPORTNUM
+
+    if port == DEFAULTPORTNUM:
         print("Wordle Application Server is running on DEFAULT PORT NUMBER:", DEFAULTPORTNUM, "\n")
 
+    s = socketCreation()
+    sockaddr_in = socketBindHandler(s, HOST, port)
+    socketListen(s, sockaddr_in)
+    socketAccept(s, sockaddr_in)
+    dataHandler(conn, address)
 
-    socketCreation(HOST, port)
-
-    #s.close()
+    s.close()
     return 0
 
+
+
 # Function Name: socketCreation
-# Description:   Creates a socket, binds it, listen for connections, and
-#                accepts any connection w/ error handling. Additionally
-#                handles binding the socket if port number is already in use.
-#                Once the connection is accepted, the server and client
-#                will read/write eachother information.
-# Parameters:    HOST - The IP address of the server
-#                port - The port that the server will try to connect to
-# Return Value:  n/a
-def socketCreation(HOST, port):
+# Description:   Creates a socket. If an exception is raised, print
+#                out an error.
+# Parameters:    N/A
+# Return Value:  s - Newly created socket object
+def socketCreation():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except OSError as e:
         print("Socket creation went wrong/failed.")
         print("Error: ", e)
-        return -1
+        sys.exit()
+    return s
 
-    # The loop is checking if the port number is already in use or not.
-    # If the socket fails to bind, then an exception is raised, port num
-    # Is incremented, and try again until it works.
+
+
+# Function Name: socketBindHandler
+# Description:   Binds the socket to an address and port. If port
+#                is already in use, then increment port number by
+#                one and try again. Print out an error message
+#                if exception is raised.
+# Parameters:    s - Socket object
+#                HOST - The IP address of the server
+#                port - The port that the server is connecting to 
+# Return Value:  sockaddr_in - Host and port number pair the
+#                socket binded to.
+def socketBindHandler(s, HOST, port):
+    # The loop only stops after the socket is successfully binded
     while True:
         try:
             sockaddr_in = (HOST, port)
@@ -106,7 +122,17 @@ def socketCreation(HOST, port):
             print("Error: ", e)
             port = port + 1
             print("Trying again. Connecting to port number:", port)
+    return sockaddr_in
 
+
+
+# Function Name: socketAccept
+# Description:   The socket listens for incoming connections.
+#                Prints out error message if exception is raised.
+# Parameters:    s - Socket object
+#                sockaddr_in - Host and port number pair
+# Return Value:  n/a
+def socketListen(s, sockaddr_in):
     try:
         s.listen()
         print("TCP: Listening on port", sockaddr_in[1])
@@ -114,34 +140,80 @@ def socketCreation(HOST, port):
         # check if the port is taken
         print("Socket listening went wrong/failed")
         print("Error: ", e)
-        return -1
+        sys.exit()
 
+
+
+# Function Name: socketAccept
+# Description:   The socket accepts incoming client connections 
+#                concurrently via the use of threads. On successful
+#                client connection, send "HELLO" to connected client.
+#                Prints out error message when exception is raised.
+# Parameters:    s - Socket object
+#                sockaddr_in - Host and port number pair
+# Return Value:  conn - Client socket object that can be used to send/recv info
+#                address - Client IP address and port number pair
+def socketAccept(s, sockaddr_in):
     # accept() returns the pair, (conn, address)
     # conn - new socket object that can be used to send/recv info
     # address - ip address bound to socket on client side
         # Note: Address is also a pair of the client IP addr + port number
         # Source: https://docs.python.org/3/library/socket.html#module-socket
-    # when client connect, send "HELLO"
-    try:
-        conn, address = s.accept()
-        data = "HELLO"
-        conn.send(data.encode())
-    except OSError as e:
-        print("Server socket failed to accept incoming connection")
-        print("Error: ", e)
-        return -1
+    while True:
+        try:
+            # Use threads to handle many connections
+            # Source: https://stackoverflow.com/questions/5568555/thread-vs-threading
+            conn, address = s.accept()
 
-    print("TCP Connection:", address[0])
+            # when client connect, send "HELLO"
+            print("TCP Connection:", address[0])
+            data = "HELLO"
+            conn.send(data.encode())
+
+            threading.Thread(target = dataHandler, args = (conn, address)).start()
+        except OSError as e:
+            print("Server socket failed to accept incoming connection")
+            print("Error: ", e)
+    return conn, address
 
 
-    # Alex added these lines for testing purposes \/
-    client_msg = conn.recv(1024).decode()
-    print(f"Client said: {client_msg}")
-    # Alex added these lines for testing purposes /\
+
+# Function Name: dataHandler
+# Description:   Handles receiving messages from client connection. If server
+#                receives "READY" or "WORD," send the client a random word.
+#                If server receives "BYE" or "QUIT," send message to client
+#                that connection is terminating
+# Parameters:    conn - Client socket object that can be used to send/recv info
+#                address - Client IP address and port number pair
+# Return Value:  0 - success
+def dataHandler(conn, address):
+    recvMaxSize = 16
+    #source: https://stackoverflow.com/questions/53285659/how-can-i-wait-until-i-receive-data-using-a-python-socket
+    while True:
+        #data = ((conn.recv(recvMaxSize)).decode()).upper()
+        data = wordleLib.getWordFrom(conn)
+        if not data:
+            break
+        # if server receives "READY" or "WORD": Send random word
+        if data == "READY" or data == "WORD":
+            try:
+                randomWord = random.choice(WORDLELIST)
+                conn.send(randomWord.encode())
+            except OSError as e:
+                print("Server failed to send message")
+                print("Error: ", e)
+        # if server receive "BYE" or "QUIT": client disconnects
+        elif data == "BYE" or data == "QUIT":
+            print(data)
+            try:
+                byeMsg = "Connection terminating."
+                conn.send(byeMsg.encode())
+                break
+            except OSError as e:
+                print("Server failed to send message")
+                print("Error: ", e)
+    return 0       
 
 
-    # if server receives "READY" or "WORD": Send random word
-
-    # if server receive "BYE" or "QUIT": client disconnects
 
 main()
