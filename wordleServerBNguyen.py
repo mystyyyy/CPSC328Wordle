@@ -59,7 +59,6 @@ def main():
     port = DEFAULTPORTNUM
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
-        print("Wordle Application Server is running on port number:", port, "\n")
 
 
     wordleLib.socketValidation(port)
