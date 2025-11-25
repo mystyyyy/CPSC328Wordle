@@ -38,7 +38,6 @@ def main():
     end_connection()
     return 0
 
-
 #####################################################################
 # Function name:    set_port_and_host                               #
 # Description:      Assigns port and host values based on command-  # 
@@ -201,7 +200,6 @@ def play_again():
             return False
         else:
             print("Invalid response. Please enter 'y' or 'n'.\n")
-
 
 #########################################################################
 # Function name:    exit_usage                                          #
