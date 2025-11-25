@@ -25,12 +25,12 @@ def main():
     (host, port) = set_port_and_host()                      # Read CLAs
     sock = make_connection(host, port)                      # Connect to server
     handshake(sock)                                         # Verify connection
-    answer_word = wordleLib.getWordFrom(sock)               # Receiver answer word from server
     print("Welcome to Wordle! You have 6 attempts to correctly guess the 5-letter answer word.")
 
     # Game Loop
     playing = True
     while playing == True:
+        answer_word = wordleLib.getWordFrom(sock)               # Receiver answer word from server
         run_game(answer_word)
         playing = play_again()
 
