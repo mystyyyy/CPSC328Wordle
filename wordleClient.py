@@ -195,6 +195,7 @@ def play_again():
     while True:                                                 # Loop until valid response calls return
         response = input().strip().lower()
         if response == "y":
+            print("\nStarting new game...\n")
             return True
         elif response == "n":
             return False
