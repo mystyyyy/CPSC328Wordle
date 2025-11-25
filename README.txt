@@ -56,23 +56,19 @@ library.
 ABOUT THE WORDLE PROTOCOL
 1. Client and server establish the TCP three-way handshake, establishing a proper TCP connection.
     1a. Once established, the server sends "HELLO" to the client.
-2. Server sends a word from its bank to the client
-3. Client then is then prompted to say "WORD"/"READY," or "BYE"/"QUIT."
-    3a. If the user says "WORD" or "READY," then the user initiates the game.
-        The server sends a word from its bank to the client, and the user can start
-        guessing the random word that was sent by the server.
-    3b. If the user says "BYE" or "QUIT," then the server sends a message that the connection is
-        terminated and the user disconnects from the server.
-4. After the game concludes, the client can choose to play again or end the connection by answering 
-    the prompt mentioned in part 3.
-
+2. When client receives "HELLO," client will send "READY" to the server. Server will then 
+   send a random word from its bank to the client
+3. Client will start playing the Wordle guessing game.
+4. When the client wins/fails, the user is then prompted whether they want to play again or disconnect.
+    a. If yes, client will send "READY" to the server, and the user will play the game again.
+    b. If no, client will send "BYE" to the server, and then disconnect. 
 To synchronize the data, the client and server switches between sending and receiving data, and will
 only proceed once it receives the information. Additionally there's a function in the wordle library
 file where it matches the random word between the client and server so that the information remains
 consistent.
 
 KNOWN ISSUES WITH THE APPLICATION
-N/A
+No known issues are currently existing in the application. Any known issues have been resolved.
 
 
 

@@ -36,17 +36,18 @@ def sendWord(sock):
 
 # Function Name: sendMessage
 # Description:   Sends a predefined message to the socket to be received by getWord
-#                This contains error checking to ensure the entered message isn't 
-#                longer than the max number of characters of 5
+#                This contains error checking to ensure the entered message is
+#                a string.
 # Parameters:    sock- The socket to be used for data transfer
 #                text- The string to be sent through the socket
 # Returns:       N/A
 def sendMessage(sock, text):
     if isinstance(text, str):
-        if len(text) <= 5:
-            sock.send(text.encode())
-            return
-    print("Error: Message being sent by system is invalid")
+        #if len(text) < 6:
+        sock.send(text.encode())
+        return
+    else:
+        print("Error: Message being sent by system is invalid")
     return
     
 

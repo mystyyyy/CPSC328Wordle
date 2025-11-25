@@ -171,6 +171,7 @@ def dataHandler(conn, address):
     while True:
         #data = ((conn.recv(recvMaxSize)).decode()).upper()
         data = wordleLib.getWordFrom(conn)
+        print("TCP Connection:", address[0], "-", data)
         if not data:
             break
         # if server receives "READY" or "WORD": Send random word
@@ -184,14 +185,10 @@ def dataHandler(conn, address):
                 print("Error: ", e)
         # if server receive "BYE" or "QUIT": client disconnects
         elif data == "BYE" or data == "QUIT":
-            print(data)
             try:
-                byeMsg = "Connection terminating."
-                #conn.send(byeMsg.encode())
-                wordleLib.sendMessage(conn, byeMsg)
                 break
             except OSError as e:
-                print("Server failed to send message")
+                print("Server failed terminate thread")
                 print("Error: ", e)
     return 0       
 
