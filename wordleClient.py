@@ -62,8 +62,12 @@ def set_port_and_host():
         port = 9999                                             # Default port number
 
     elif len(sys.argv) == 3:                                    # 2 CLAs (Host and Port)
+<<<<<<< HEAD
         port = int(sys.argv[2])
         if wordleLib.socketValidation(port) == False:    # Library function to validate port number
+=======
+        if wordleLib.socketValidation(sys.argv[2]) == False:    # Library function to validate port number
+>>>>>>> 84e111b10b63032778ec52d4bc69dc8e4624bf24
             exit_usage()
         try: 
             host = sys.argv[1]                                  # User-specified host
@@ -198,7 +202,11 @@ def play_again(socket):
         response = input().strip().lower()
         if response == "y":
             print("\nStarting new game...\n")
+<<<<<<< HEAD
             wordleLib.sendMessage(socket, "READY")                      # Send "READY" to server
+=======
+            wordleLib.sendMessage(socket, "WORD")                      # Send "READY" to server
+>>>>>>> 84e111b10b63032778ec52d4bc69dc8e4624bf24
             return True
         elif response == "n":
             return False
