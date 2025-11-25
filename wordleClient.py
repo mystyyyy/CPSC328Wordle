@@ -14,7 +14,6 @@
 #####################################################################
 
 import sys
-import socket
 import string
 import wordleLib
 
@@ -26,8 +25,9 @@ def main():
     (host, port) = set_port_and_host()
     sock = make_connection(host, port)
     handshake(sock)
-    answer_word = receive_word(sock)
+    answer_word = wordleLib.getWordFrom(sock)
     print(answer_word)
+    print_instructions()
 
     # Game Loop
     playing = True
@@ -35,12 +35,10 @@ def main():
         run_game(answer_word)
         playing = play_again()
 
-    # Terminate Connection
+    # End Program
     sock.close()
     print("Thanks for playing!\n")
     return 0
-
-# Note: move welcome message outside of function so that the user isn't welcomed on repeat playthroughs.
 
 
 #####################################################################
@@ -62,11 +60,13 @@ def set_port_and_host():
         print("Error: Please provide a hostname.\n")
         exit_usage()
 
-    elif len(sys.argv) == 2:                                      # 1 CLA (Host only)
-        host = sys.argv[1]                                  # User-specified host
-        port = 9999                                         # Default port number
+    elif len(sys.argv) == 2:                                    # 1 CLA (Host only)
+        host = sys.argv[1]                                      # User-specified host
+        port = 9999                                             # Default port number
 
-    elif len(sys.argv) == 3:                                      # 2 CLAs     
+    elif len(sys.argv) == 3:                                    # 2 CLAs
+        if wordleLib.socketValidation(sys.argv[2]) == False:
+            exit_usage()     
         try: 
             host = sys.argv[1]                                  # User-specified host
             port = int(sys.argv[2])                             # User-specified port number - check if int
@@ -87,10 +87,10 @@ def set_port_and_host():
 def make_connection(hostname, portnum):
     try:
         serverAddress = (hostname, portnum)                     # Specify server address
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # Create socket object
+        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Create socket object
+        s = wordleLib.socketCreation()
         s.connect(serverAddress)                                # Connect to server 
         print(f"Connected to {hostname} : {portnum}")
-
     except OSError:                                             # Error thrown by failure to connect
         print(f"Error: Connection to {hostname} : {portnum} failed.")
         exit_usage()
@@ -113,7 +113,7 @@ def handshake(socket):
         exit_usage()
 
     print(f"Server said: {server_msg}")                         # Print message from server
-    s.send("READY".encode())                                    # Send READY to server
+    wordleLib.sendMessage(s, "READY")
 
 #########################################################################
 # Function name:    receive_word                                        #
