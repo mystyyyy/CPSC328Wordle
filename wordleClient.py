@@ -64,8 +64,9 @@ def set_port_and_host():
         host = sys.argv[1]                                      # User-specified host
         port = 9999                                             # Default port number
 
-    elif len(sys.argv) == 3:                                    # 2 CLAs
-        if wordleLib.socketValidation(sys.argv[2]) == False:
+    elif len(sys.argv) == 3:   
+        port = int(sys.argv[2])                                 # 2 CLAs
+        if wordleLib.socketValidation(port) == False:
             exit_usage()     
         try: 
             host = sys.argv[1]                                  # User-specified host
