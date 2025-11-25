@@ -35,7 +35,7 @@ def main():
         playing = play_again()
 
     # End Program
-    end_connection()
+    end_connection(sock)
     return 0
 
 #####################################################################
