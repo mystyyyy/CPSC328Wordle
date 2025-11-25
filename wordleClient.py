@@ -148,18 +148,18 @@ def run_game(answer):
         current_green_letters = ['_'] * 5
 
         # Sort guessed letters
-        for i, char in enumerate(guess):                            # Iterare through letters in guess
-            if char in white_letters:                               # Update unguessed (white) letters
+        for i, char in enumerate(guess):                        # Iterare through letters in guess
+            if char in white_letters:                           # Update unguessed (white) letters
                 white_letters.remove(char)
             if char == answer[i]:
-                known_green_letters[i] = char                       # Update known green letters
-                current_green_letters[i] = char                     # Update current green letters
+                known_green_letters[i] = char                   # Update known green letters
+                current_green_letters[i] = char                 # Update current green letters
                 if char in yellow_letters:
-                    yellow_letters.remove(char)                     # Remove from yellow letters if now green
+                    yellow_letters.remove(char)                 # Remove from yellow letters if now green
             elif char in answer and char not in yellow_letters and char not in known_green_letters:
-                yellow_letters.append(char)                         # Update yellow letters
+                yellow_letters.append(char)                     # Update yellow letters
             elif char not in answer and char not in gray_letters:
-                gray_letters.append(char)                           # Update wrong (gray) letters
+                gray_letters.append(char)                       # Update wrong (gray) letters
             else:
                 print(f"Error: Letter {char}")
 
@@ -215,12 +215,12 @@ def exit_usage():
 # Function name:    end_connection                                      #
 # Description:      Sends BYE to server and closes socket connection,   #   
 #                   prints goodbye message to user                      #
-# Parameters:       none                                                #
+# Parameters:       sock: socket object used to communicate with server #
 # Return Value:     none                                                #
 #########################################################################
-def end_connection():
-    wordleLib.sendMessage(s, "BYE")                                 # Send BYE to server
-    sock.close()                                                    # Close socket connection
-    print("Thanks for playing!\n")                                  # Print goodbye message                               
+def end_connection(sock):
+    wordleLib.sendMessage(sock, "BYE")                          # Send BYE to server
+    sock.close()                                                # Close socket connection
+    print("Thanks for playing!\n")                              # Print goodbye message                               
 
 main()
