@@ -22,12 +22,11 @@ import wordleLib
 
 def main():
     # Setup 
-    (host, port) = set_port_and_host()
-    sock = make_connection(host, port)
-    handshake(sock)
-    answer_word = wordleLib.getWordFrom(sock)
-    print(answer_word)
-    print_instructions()
+    (host, port) = set_port_and_host()                      # Read CLAs
+    sock = make_connection(host, port)                      # Connect to server
+    handshake(sock)                                         # Verify connection
+    answer_word = wordleLib.getWordFrom(sock)               # Receiver answer word from server
+    print("Welcome to Wordle! You have 6 attempts to correctly guess the 5-letter answer word.")
 
     # Game Loop
     playing = True
@@ -36,8 +35,7 @@ def main():
         playing = play_again()
 
     # End Program
-    sock.close()
-    print("Thanks for playing!\n")
+    end_connection()
     return 0
 
 
@@ -56,7 +54,7 @@ def set_port_and_host():
         print("Error: Too many command-line arguments.\n")
         exit_usage()
 
-    elif len(sys.argv) == 1:                                      # 0 CLAs
+    elif len(sys.argv) == 1:                                    # 0 CLAs
         print("Error: Please provide a hostname.\n")
         exit_usage()
 
@@ -64,9 +62,9 @@ def set_port_and_host():
         host = sys.argv[1]                                      # User-specified host
         port = 9999                                             # Default port number
 
-    elif len(sys.argv) == 3:                                    # 2 CLAs
-        if wordleLib.socketValidation(sys.argv[2]) == False:
-            exit_usage()     
+    elif len(sys.argv) == 3:                                    # 2 CLAs (Host and Port)
+        if wordleLib.socketValidation(sys.argv[2]) == False:    # Library function to validate port number
+            exit_usage()
         try: 
             host = sys.argv[1]                                  # User-specified host
             port = int(sys.argv[2])                             # User-specified port number - check if int
@@ -80,16 +78,15 @@ def set_port_and_host():
 # Function name:    make_connection                                     #
 # Description:      Uses host and port number to connect to the server  #
 # Parameters:       hostname: name of the client running the            #
-#                   application                                         #
+#                             application                               #
 #                   portnum: port number of the server side application #
-# Return Value:     N/A                                                 #
+# Return Value:     s: the socket object created by function            #
 #########################################################################
 def make_connection(hostname, portnum):
     try:
         serverAddress = (hostname, portnum)                     # Specify server address
-        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Create socket object
-        s = wordleLib.socketCreation()
-        s.connect(serverAddress)                                # Connect to server 
+        s = wordleLib.socketCreation()                          # Library function to create socket w/ error checks
+        s.connect(serverAddress)                                # Connect to server via socket
         print(f"Connected to {hostname} : {portnum}")
     except OSError:                                             # Error thrown by failure to connect
         print(f"Error: Connection to {hostname} : {portnum} failed.")
@@ -101,103 +98,73 @@ def make_connection(hostname, portnum):
 # Function name:    handshake                                           #
 # Description:      Verifies client-server connection with a three-way  #
 #                   handshake.                                          #
-# Parameters:       N/A                                                 #
+# Parameters:       socket: the socket object created previously        #
 # Return Value:     N/A                                                 #
 #########################################################################
 def handshake(socket):
-    s = socket                                                  # Define socket object as received from make_connection()
-    server_msg = s.recv(1024).decode().strip()                  # Receive message from server
+    server_msg = socket.recv(1024).decode().strip()             # Receive message from server
 
     if server_msg != "HELLO":                                   # Check that message is "HELLO"
         print(f"Handshake Error: expected \"HELLO\" from server, but received {server_msg}\n")
         exit_usage()
 
     print(f"Server said: {server_msg}")                         # Print message from server
-    wordleLib.sendMessage(s, "READY")
+    wordleLib.sendMessage(socket, "READY")                      # Send "READY" to server
+
+    return
 
 #########################################################################
-# Function name:    receive_word                                        #
-# Description:      #
-# Parameters:       N/A                                                 #
+# Function name:    run_game                                            #
+# Description:      Runs a loop that allows user to play wordle.        #
+#                   Manages a series of lists that keep track of        #
+#                   letters and how correct they are, updating with     #
+#                   user-input guesses.                                 #
+# Parameters:       answer: the answer word received from the server    #
 # Return Value:     N/A                                                 #
 #########################################################################
-def receive_word(socket):
-    s = socket
-    answer = s.recv(1024).decode().strip()                      # Receive message from server
-    
-    if len(answer) != 5:
-        print(f"Word Error: Word received from server contains {len(answer)} characters, expected 5.")
-        exit_usage()
-    
-    print("Word received! Ready to start.")
-    return answer
-
-#########################################################################
-# Function name:    print_instructions                                  #
-# Description:      #
-# Parameters:       N/A                                                 #
-# Return Value:     N/A                                                 #
-#########################################################################
-def print_instructions():
-    print("Welcome to Wordle! You have 6 attempts to correctly guess the 5-letter answer word.")
-
-#########################################################################
-# Function name:    print_instructions                                  #
-# Description:      #
-# Parameters:       N/A                                                 #
-# Return Value:     N/A                                                 #
-#########################################################################
-def run_game(answer_word):
-
-    # NOTE: Display all previous guesses after each guess? make yellow letters
-    #       lowercase? Show all correct letters in addition to correctly positioned correct letters?
-
-    answer = answer_word
+def run_game(answer):
     guesses_remaining = 6
     current_green_letters = []
     known_green_letters = ['_'] * 5
     yellow_letters = []
     gray_letters = []
     white_letters = list(string.ascii_uppercase)
-    print_instructions()
 
     while guesses_remaining > 0:
         print(f"Guesses Remaining: {guesses_remaining}")
         guess = input().strip().upper()
         print(f"\nYou guessed: {guess}")
 
-        # If guess contains non-letters, try again
+        # If guess contains non-letters, maker user try again
         if not guess.isalpha():
             print(f"Error: Guess must contain only letters.\n")
             continue
 
-        # If guess does not contain exactly 5 letters, try again
+        # If guess does not contain exactly 5 letters, make user try again
         if not len(guess) == 5:
             print(f"Error: Guess must contain exactly 5 letters\n")
             continue
 
-
-        # Reset lists of green and yellow letters, prepare for reassignment
+        # Reset list of current green letters for reassignment
         current_green_letters = ['_'] * 5
 
         # Sort guessed letters
-        for i, char in enumerate(guess):
-            # print(f"{i} {char} {answer[i]}")
-            if char in white_letters:
+        for i, char in enumerate(guess):                            # Iterare through letters in guess
+            if char in white_letters:                               # Update unguessed (white) letters
                 white_letters.remove(char)
             if char == answer[i]:
-                known_green_letters[i] = char
-                current_green_letters[i] = char
+                known_green_letters[i] = char                       # Update known green letters
+                current_green_letters[i] = char                     # Update current green letters
                 if char in yellow_letters:
-                    yellow_letters.remove(char)
+                    yellow_letters.remove(char)                     # Remove from yellow letters if now green
             elif char in answer and char not in yellow_letters and char not in known_green_letters:
-                yellow_letters.append(char)
+                yellow_letters.append(char)                         # Update yellow letters
             elif char not in answer and char not in gray_letters:
-                gray_letters.append(char)
+                gray_letters.append(char)                           # Update wrong (gray) letters
             else:
                 print(f"Error: Letter {char}")
 
-        # Display info
+        # Display guess info
         print(f"Green letters in this guess:\n{''.join(current_green_letters)}")
         print(f"All known green letters:\n{''.join(known_green_letters)}")
         print(f"All known yellow letters:\n{', '.join(yellow_letters)}")
@@ -207,24 +174,26 @@ def run_game(answer_word):
         # Decrement remaining guesses
         guesses_remaining -= 1
 
+        # User wins
         if guess == answer:
             print(f"You guessed the word! Congratulations!")
             return
 
+        # User loses
         if guesses_remaining == 0:
-            print(f"Too bad!")
+            print(f"You've run out of guesses! The word was:\n{answer}.\n")
             return
 
 #########################################################################
-# Function name:    exit_usage                                          #
-# Description:      Exits the program and prints the proper usage of    #   
-#                   command-line arguments                              #
+# Function name:    play_again                                          #
+# Description:      Asks user if they want to play again, returns true  #   
+#                   True if yes (y), False if no (n)                    #
 # Parameters:       none                                                #
-# Return Value:     none                                                #
+# Return Value:     True or False                                       #
 #########################################################################
 def play_again():
     print("Play again? (y/n)\n")
-    while True:
+    while True:                                                 # Loop until valid response calls return
         response = input().strip().lower()
         if response == "y":
             return True
@@ -244,5 +213,16 @@ def play_again():
 def exit_usage():
     sys.exit(f"Usage:\npython {sys.argv[0]} <Hostname>, <Port Number>\nOr, for default port number 9999:\npython {sys.argv[0]} <Hostname>")
 
+#########################################################################
+# Function name:    end_connection                                      #
+# Description:      Sends BYE to server and closes socket connection,   #   
+#                   prints goodbye message to user                      #
+# Parameters:       none                                                #
+# Return Value:     none                                                #
+#########################################################################
+def end_connection():
+    wordleLib.sendMessage(s, "BYE")                                 # Send BYE to server
+    sock.close()                                                    # Close socket connection
+    print("Thanks for playing!\n")                                  # Print goodbye message                               
 
 main()
