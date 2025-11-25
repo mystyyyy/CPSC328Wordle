@@ -14,24 +14,31 @@
 #####################################################################
 
 import sys
-import socket
 import string
-
-# Spencer Library Import goes here
+import wordleLib
 
 # host = "127.0.0.1"
 # port = 9999
 
 def main():
+    # Setup 
     (host, port) = set_port_and_host()
     sock = make_connection(host, port)
     handshake(sock)
-    answer_word = receive_word(sock)
+    answer_word = wordleLib.getWordFrom(sock)
     print(answer_word)
-    run_game(answer_word)
+    print_instructions()
 
+    # Game Loop
+    playing = True
+    while playing == True:
+        run_game(answer_word)
+        playing = play_again()
+
+    # End Program
+    sock.close()
+    print("Thanks for playing!\n")
     return 0
-
 
 
 #####################################################################
@@ -53,11 +60,13 @@ def set_port_and_host():
         print("Error: Please provide a hostname.\n")
         exit_usage()
 
-    elif len(sys.argv) == 2:                                      # 1 CLA (Host only)
-        host = sys.argv[1]                                  # User-specified host
-        port = 9999                                         # Default port number
+    elif len(sys.argv) == 2:                                    # 1 CLA (Host only)
+        host = sys.argv[1]                                      # User-specified host
+        port = 9999                                             # Default port number
 
-    elif len(sys.argv) == 3:                                      # 2 CLAs     
+    elif len(sys.argv) == 3:                                    # 2 CLAs
+        if wordleLib.socketValidation(sys.argv[2]) == False:
+            exit_usage()     
         try: 
             host = sys.argv[1]                                  # User-specified host
             port = int(sys.argv[2])                             # User-specified port number - check if int
@@ -78,10 +87,10 @@ def set_port_and_host():
 def make_connection(hostname, portnum):
     try:
         serverAddress = (hostname, portnum)                     # Specify server address
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # Create socket object
+        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Create socket object
+        s = wordleLib.socketCreation()
         s.connect(serverAddress)                                # Connect to server 
         print(f"Connected to {hostname} : {portnum}")
-
     except OSError:                                             # Error thrown by failure to connect
         print(f"Error: Connection to {hostname} : {portnum} failed.")
         exit_usage()
@@ -104,7 +113,7 @@ def handshake(socket):
         exit_usage()
 
     print(f"Server said: {server_msg}")                         # Print message from server
-    s.send("READY".encode())                                    # Send READY to server
+    wordleLib.sendMessage(s, "READY")
 
 #########################################################################
 # Function name:    receive_word                                        #
@@ -200,11 +209,29 @@ def run_game(answer_word):
 
         if guess == answer:
             print(f"You guessed the word! Congratulations!")
-            exit_usage() # FUNCTION THAT GOES TO PLAY AGAIN
+            return
 
         if guesses_remaining == 0:
             print(f"Too bad!")
-            exit_usage() # FUNCTION THAT GOES TO PLAY AGAIN
+            return
+
+#########################################################################
+# Function name:    exit_usage                                          #
+# Description:      Exits the program and prints the proper usage of    #   
+#                   command-line arguments                              #
+# Parameters:       none                                                #
+# Return Value:     none                                                #
+#########################################################################
+def play_again():
+    print("Play again? (y/n)\n")
+    while True:
+        response = input().strip().lower()
+        if response == "y":
+            return True
+        elif response == "n":
+            return False
+        else:
+            print("Invalid response. Please enter 'y' or 'n'.\n")
 
 
 #########################################################################
