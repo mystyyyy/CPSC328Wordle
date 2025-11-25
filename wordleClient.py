@@ -32,7 +32,7 @@ def main():
     while playing == True:
         answer_word = wordleLib.getWordFrom(sock)               # Receiver answer word from server
         run_game(answer_word)
-        playing = play_again()
+        playing = play_again(sock)
 
     # End Program
     end_connection(sock)
@@ -187,14 +187,16 @@ def run_game(answer):
 # Function name:    play_again                                          #
 # Description:      Asks user if they want to play again, returns true  #   
 #                   True if yes (y), False if no (n)                    #
-# Parameters:       none                                                #
+# Parameters:       socket: socket object used to communicate with      #
+#                   server                                              #
 # Return Value:     True or False                                       #
 #########################################################################
-def play_again():
+def play_again(socket):
     print("Play again? (y/n)\n")
     while True:                                                 # Loop until valid response calls return
         response = input().strip().lower()
         if response == "y":
+            wordleLib.sendMessage(socket, "WORD")                      # Send "READY" to server
             return True
         elif response == "n":
             return False
